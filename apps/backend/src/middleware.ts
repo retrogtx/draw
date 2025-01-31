@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { JWT_SECRET } from "@repo/backend-common/config";
 
 declare global {
     namespace Express {
@@ -11,12 +12,17 @@ declare global {
 
 export function middleware(req: Request, res: Response, next: NextFunction) {
     const token = req.headers["authorization"] ?? "";
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {userId: number};
+    
+    if (!JWT_SECRET) {
+        res.status(500).json({ message: "Server configuration error" });
+        return;
+    }
 
-    if(decoded) {
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
         req.userId = decoded.userId;
         next();
-    } else {
-        res.status(403).json({message: "Unauthorized"});
+    } catch (error) {
+        res.status(403).json({ message: "Unauthorized" });
     }
 } 

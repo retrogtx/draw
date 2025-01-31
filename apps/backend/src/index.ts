@@ -1,40 +1,87 @@
 import express from "express";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import { middleware } from "./middleware";
 import { CreateUserSchema, SignInSchema, CreateRoomSchema } from "@repo/common/types";
+import { prismaClient } from "@repo/db/client";
+import { JWT_SECRET } from "@repo/backend-common/config";
 
 const app = express();
+app.use(express.json());
 
-app.post("/signup", (req, res) => {
-  const data = CreateUserSchema.safeParse(req.body);
-  if (!data.success) {
+app.post("/signup", async (req, res) => {
+  const parsedData = CreateUserSchema.safeParse(req.body);
+  if (!parsedData.success) {
+    console.log(parsedData.error);
     res.status(400).json({message: "Invalid request"});
+    return;
   }
-  res.json({message: "User created"});
-  return;
+  try {
+    const user = await prismaClient.user.create({
+      data: {
+        email: parsedData.data.email,
+        password: bcrypt.hashSync(parsedData.data.password, 10),
+        name: parsedData.data.name,
+    },
+  });
+  res.json({userId: user.id})}
+  catch (error) {
+    res.status(500).json({message: "User already exists"});
+    return;
+  }
 })    
 
-app.post("/signin", (req, res) => {
-  const data = SignInSchema.safeParse(req.body);
-  if (!data.success) {
-      res.status(400).json({message: "Invalid request"});
-      return;
-    }
-  const userId = 1;
-  if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET is not defined");
-    }
-  const token = jwt.sign({userId}, process.env.JWT_SECRET);
-    res.json({token});
+app.post("/signin", async (req, res) => {
+  const parsedData = SignInSchema.safeParse(req.body);
+  if (!parsedData.success) {
+    res.status(400).json({message: "Invalid request"});
+    return;
+  }
+
+  const user = await prismaClient.user.findUnique({
+    where: {
+      email: parsedData.data.email,
+    },
+  });
+  
+  if (!user || !bcrypt.compareSync(parsedData.data.password, user.password)) {
+    res.status(403).json({message: "Invalid credentials"});
+    return;
+  }
+
+  if (!JWT_SECRET) {
+    throw new Error("JWT_SECRET is not defined");
+  }
+  const token = jwt.sign({userId: user.id}, JWT_SECRET);
+  res.json({token});
 });
 
-app.post("/room", middleware, (req, res) => {
-  const data = CreateRoomSchema.safeParse(req.body);
-  if (!data.success) {
+app.post("/room", middleware, async (req, res) => {
+  const parsedData = CreateRoomSchema.safeParse(req.body);
+  if (!parsedData.success) {
     res.status(400).json({message: "Invalid request"});
     return; 
   }
-  res.json({message: "Room created"});
+
+  const userId = req.userId;
+  if (!userId) {
+    res.status(401).json({message: "Unauthorized"});
+    return;
+  }
+  
+  try {
+    const room = await prismaClient.room.create({
+      data: {
+        slug: parsedData.data.name,
+        adminId: userId.toString(),
+      },
+    });
+
+    res.json({roomId: room.id});
+  } catch (error) {
+    res.status(411).json({message: "Room already exists"});
+    return;
+  }
 });
 
 app.listen(3001);
