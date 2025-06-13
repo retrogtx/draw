@@ -13,7 +13,7 @@ export default function WhiteboardContent() {
   const [copied, setCopied] = useState(false);
   
   const shareableLink = typeof window !== 'undefined' 
-    ? `${window.location.origin}/whiteboard?room=${roomId}` 
+    ? `${window.location.origin}/?room=${roomId}` 
     : '';
 
   const copyToClipboard = () => {
@@ -25,7 +25,7 @@ export default function WhiteboardContent() {
   const handleJoinRoom = (e: React.FormEvent) => {
     e.preventDefault();
     if (newRoomId.trim()) {
-      router.push(`/whiteboard?room=${newRoomId.trim()}`);
+      router.push(`/?room=${newRoomId.trim()}`);
     }
   };
   
@@ -55,7 +55,7 @@ export default function WhiteboardContent() {
           </form>
           
           <Link
-            href={`/whiteboard?room=${Math.random().toString(36).substring(2, 8)}`}
+            href={`/?room=${Math.random().toString(36).substring(2, 8)}`}
             className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm w-full sm:w-auto text-center"
           >
             Create New Room
