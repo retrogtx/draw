@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import useWhiteboardStore, { supabase, Point } from "@/app/store/useWhiteboardStore";
+import useWhiteboardStore, { supabase, Point, User } from "@/app/store/useWhiteboardStore";
 
 // Optionally, you can comment out the icon if lucide-react is not installed yet
 // import { Trash2 } from "lucide-react";
@@ -20,7 +20,6 @@ interface Stroke {
 export default function Whiteboard({ roomId }: WhiteboardProps) {
   const {
     username,
-    isConnected,
     activeUsers,
     isDrawing,
     currentColor,
@@ -53,7 +52,6 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
     };
   }, [roomId, setRoomId]);
 
-  // Set up canvas - ONLY run once on mount, not on color change
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -72,7 +70,7 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
       context.lineCap = 'round';
       context.lineJoin = 'round';
       context.lineWidth = 5;
-      context.strokeStyle = currentColor;
+      // Don't set strokeStyle here, it will be set in a separate useEffect
       contextRef.current = context;
       if (isInitialSetup.current) {
         context.fillStyle = 'rgba(0,0,0,0)';
@@ -97,7 +95,7 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
       resizeObserver.disconnect();
       window.removeEventListener('resize', setupCanvas);
     };
-  }, []); // Remove currentColor from dependencies
+  }, []); // No dependencies, only run once on mount
 
   // Update canvas color when color changes - separate effect
   useEffect(() => {
@@ -137,37 +135,43 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
     });
   };
 
-  // Request existing strokes when joining a room
-  const requestExistingStrokes = (channel: any) => {
-    channel.send({
-      type: 'broadcast',
-      event: 'request_strokes',
-      payload: {
-        userId: userId,
-        requestTime: new Date().getTime(),
-      },
-    });
-  };
-
   // Set up Supabase realtime connection
   useEffect(() => {
     const channelName = getChannelName();
     const channel = supabase.channel(channelName);
     setChannel(channel);
 
+    // Helper function to request existing strokes when joining a room
+    const requestExistingStrokes = () => {
+      channel.send({
+        type: 'broadcast',
+        event: 'request_strokes',
+        payload: {
+          userId: userId,
+          requestTime: new Date().getTime(),
+        },
+      });
+    };
+
     // Presence for active users
     channel.on('presence', { event: 'sync' }, () => {
       const state = channel.presenceState();
-      const users: any[] = [];
-      Object.keys(state).forEach(key => {
-        const presences = state[key];
-        users.push(...presences);
+      const users: User[] = [];
+      
+      Object.values(state).forEach((presenceList: unknown) => {
+        const typedPresenceList = presenceList as { user_id: string; username: string; online_at: number }[];
+        users.push(...typedPresenceList.map(presence => ({
+          user_id: presence.user_id,
+          username: presence.username,
+          online_at: presence.online_at
+        })));
       });
+      
       setActiveUsers(users);
     });
 
     // Handle drawing events
-    channel.on('broadcast', { event: 'draw_batch' }, (payload: any) => {
+    channel.on('broadcast', { event: 'draw_batch' }, (payload: { payload: { userId: string; points: Point[]; color: string } }) => {
       if (payload.payload.userId === userId) return;
       
       const { points, color, userId: strokeUserId } = payload.payload;
@@ -201,7 +205,7 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
     });
 
     // Handle individual drawing events
-    channel.on('broadcast', { event: 'draw' }, (payload: any) => {
+    channel.on('broadcast', { event: 'draw' }, (payload: { payload: { userId: string; type: 'start' | 'move'; x: number; y: number; color: string } }) => {
       if (payload.payload.userId === userId) return;
       
       const { x, y, type, color } = payload.payload;
@@ -233,7 +237,7 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
     });
 
     // Handle stroke request - send all strokes to the requester
-    channel.on('broadcast', { event: 'request_strokes' }, (payload: any) => {
+    channel.on('broadcast', { event: 'request_strokes' }, (payload: { payload: { userId: string; requestTime: number } }) => {
       if (payload.payload.userId === userId) return;
       
       // Only the user who has been in the room the longest should respond
@@ -241,8 +245,9 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
       const users = channel.presenceState();
       let oldestUser = { online_at: Infinity, user_id: '' };
       
-      Object.values(users).forEach((userList: any) => {
-        userList.forEach((user: any) => {
+      Object.values(users).forEach((userList: unknown) => {
+        const typedUserList = userList as { user_id: string; online_at: number }[];
+        typedUserList.forEach((user) => {
           if (user.online_at < oldestUser.online_at) {
             oldestUser = user;
           }
@@ -266,7 +271,13 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
     });
 
     // Handle receiving all strokes
-    channel.on('broadcast', { event: 'send_strokes' }, (payload: any) => {
+    channel.on('broadcast', { event: 'send_strokes' }, (payload: { 
+      payload: { 
+        userId: string; 
+        strokes: Stroke[]; 
+        requesterId: string 
+      } 
+    }) => {
       // Only process if I'm the requester
       if (payload.payload.requesterId !== userId) return;
       
@@ -281,7 +292,7 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
     });
 
     // Subscribe to channel
-    channel.subscribe(async (status: any) => {
+    channel.subscribe(async (status: string) => {
       if (status === 'SUBSCRIBED') {
         await channel.track({
           user_id: userId,
@@ -291,7 +302,7 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
         setIsConnected(true);
         
         // Request existing strokes when joining
-        requestExistingStrokes(channel);
+        requestExistingStrokes();
       }
     });
 
@@ -333,7 +344,8 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
   // Start drawing handler
   const startDrawing = ({ nativeEvent }: { nativeEvent: MouseEvent }) => {
     if (!contextRef.current) return;
-    const { offsetX, offsetY } = nativeEvent as any;
+    const offsetX = nativeEvent.offsetX;
+    const offsetY = nativeEvent.offsetY;
     contextRef.current.beginPath();
     contextRef.current.moveTo(offsetX, offsetY);
     setIsDrawing(true);
@@ -365,7 +377,8 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
   // Draw handler
   const draw = ({ nativeEvent }: { nativeEvent: MouseEvent }) => {
     if (!isDrawing || !contextRef.current) return;
-    const { offsetX, offsetY } = nativeEvent as any;
+    const offsetX = nativeEvent.offsetX;
+    const offsetY = nativeEvent.offsetY;
     contextRef.current.lineTo(offsetX, offsetY);
     contextRef.current.stroke();
     

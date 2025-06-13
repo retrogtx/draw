@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { createClient } from '@supabase/supabase-js'
+import { RealtimeChannel } from '@supabase/supabase-js'
 
 const supabaseUrl = 'https://kqeaxfhqnjyimjdjglsq.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxZWF4Zmhxbmp5aW1qZGpnbHNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1MTU5ODksImV4cCI6MjA1OTA5MTk4OX0.XWv4-E_3KXnghEC07QAtHQNkOjbmIF87XMlHCWTGwAA'
@@ -30,7 +31,7 @@ interface WhiteboardState {
   userId: string
   currentPath: Point[]
   roomId: string
-  channel: any
+  channel: RealtimeChannel | null
   
   // Actions
   setUsername: (username: string) => void
@@ -44,7 +45,7 @@ interface WhiteboardState {
   addPointToCurrentPath: (point: Point) => void
   clearCurrentPath: () => void
   setRoomId: (roomId: string) => void
-  setChannel: (channel: any) => void
+  setChannel: (channel: RealtimeChannel) => void
   getChannelName: () => string
 }
 
