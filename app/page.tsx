@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import WhiteboardContent from "@/app/components/WhiteboardContent";
+import WhiteboardContent from "@/components/WhiteboardContent";
 
 export default function WhiteboardPage() {
   return (

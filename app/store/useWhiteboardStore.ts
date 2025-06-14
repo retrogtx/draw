@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { createClient } from '@supabase/supabase-js'
 import { RealtimeChannel } from '@supabase/supabase-js'
+import { DrawingTool } from '../../components/Toolbar'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!
@@ -28,6 +29,7 @@ interface WhiteboardState {
   activeUsers: User[]
   isDrawing: boolean
   currentColor: string
+  currentTool: DrawingTool
   pointsBuffer: Point[]
   userId: string
   currentPath: Point[]
@@ -40,6 +42,7 @@ interface WhiteboardState {
   setActiveUsers: (users: User[]) => void
   setIsDrawing: (isDrawing: boolean) => void
   setCurrentColor: (color: string) => void
+  setCurrentTool: (tool: DrawingTool) => void
   addPointToBuffer: (point: Point) => void
   clearPointsBuffer: () => void
   setCurrentPath: (path: Point[]) => void
@@ -68,6 +71,7 @@ const useWhiteboardStore = create<WhiteboardState>((set, get) => ({
   activeUsers: [],
   isDrawing: false,
   currentColor: '#3ecf8e',
+  currentTool: 'pencil',
   pointsBuffer: [],
   userId: generateUserId(),
   currentPath: [],
@@ -80,6 +84,7 @@ const useWhiteboardStore = create<WhiteboardState>((set, get) => ({
   setActiveUsers: (users) => set({ activeUsers: users }),
   setIsDrawing: (isDrawing) => set({ isDrawing }),
   setCurrentColor: (color) => set({ currentColor: color }),
+  setCurrentTool: (tool) => set({ currentTool: tool }),
   addPointToBuffer: (point) => set((state) => ({ 
     pointsBuffer: [...state.pointsBuffer, point] 
   })),
