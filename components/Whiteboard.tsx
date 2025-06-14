@@ -42,7 +42,6 @@ interface TextData {
 export default function Whiteboard({ roomId }: WhiteboardProps) {
   const {
     username,
-    activeUsers,
     isDrawing,
     currentColor,
     currentTool,
@@ -51,11 +50,9 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
     setIsConnected,
     setActiveUsers,
     setIsDrawing,
-    setCurrentColor,
     setCurrentTool,
     addPointToBuffer,
     clearPointsBuffer,
-    clearCurrentPath,
     setRoomId,
     setChannel,
     getChannelName
@@ -131,7 +128,7 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
       resizeObserver.disconnect();
       window.removeEventListener('resize', setupCanvas);
     };
-  }, []); // No dependencies, only run once on mount
+  }, []);
 
   // Update canvas color when color changes - separate effect
   useEffect(() => {
@@ -298,7 +295,7 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
     channel.on('broadcast', { event: 'draw_shape' }, (payload: { payload: { userId: string; shape: ShapeData; tool: string } }) => {
       if (payload.payload.userId === userId) return;
       
-      const { shape, tool } = payload.payload;
+      const { shape } = payload.payload;
       setShapes(prev => [...prev, shape]);
       
       const context = contextRef.current;

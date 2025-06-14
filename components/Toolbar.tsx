@@ -1,12 +1,10 @@
-import { useState } from 'react';
 import useWhiteboardStore from "@/app/store/useWhiteboardStore";
 import { Button } from "@/components/ui/button";
 import { 
   Pencil, 
   Square, 
   RectangleHorizontal, 
-  Type,
-  Minimize 
+  Type, 
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import ColorPalette from './ColorPalette';

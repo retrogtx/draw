@@ -1,14 +1,7 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { CheckIcon, ChevronDownIcon } from "lucide-react";
+
 
 interface ColorPaletteProps {
   currentColor: string;
@@ -50,28 +43,6 @@ export default function ColorPalette({ currentColor, onChange }: ColorPalettePro
     { name: "Gray 200", value: "#e5e5e5" },
     { name: "Gray 100", value: "#f5f5f5" },
     { name: "White", value: "#ffffff" },
-  ];
-
-  // Predefined color sets for quick selection
-  const colorSets = [
-    {
-      name: "Social",
-      colors: [
-        { name: "Twitter", value: "#1DA1F2" },
-        { name: "Facebook", value: "#1877F2" },
-        { name: "Instagram", value: "#E4405F" },
-        { name: "LinkedIn", value: "#0A66C2" },
-      ],
-    },
-    {
-      name: "Brand",
-      colors: [
-        { name: "Primary", value: "#3ecf8e" },
-        { name: "Secondary", value: "#2563eb" },
-        { name: "Accent", value: "#f59e0b" },
-        { name: "Warning", value: "#ef4444" },
-      ],
-    },
   ];
 
   return (
@@ -127,54 +98,6 @@ export default function ColorPalette({ currentColor, onChange }: ColorPalettePro
           </div>
           
           <Separator />
-          
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium text-sm">Color Sets</h4>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 px-2">
-                    <span className="sr-only">Open color set menu</span>
-                    <ChevronDownIcon className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {colorSets.map((set) => (
-                    <DropdownMenuItem key={set.name} className="flex items-center gap-2">
-                      <div className="flex gap-1">
-                        {set.colors.map((color) => (
-                          <div
-                            key={color.value}
-                            className="h-4 w-4 rounded-sm"
-                            style={{ backgroundColor: color.value }}
-                          />
-                        ))}
-                      </div>
-                      <span>{set.name}</span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            
-            <div className="grid grid-cols-4 gap-2">
-              {colorSets[0].colors.map((color) => (
-                <button
-                  key={color.value}
-                  className={`h-8 rounded flex items-center justify-between px-2 ${
-                    currentColor === color.value 
-                      ? "bg-primary text-primary-foreground" 
-                      : "hover:bg-muted"
-                  }`}
-                  style={{ backgroundColor: color.value, color: "#fff" }}
-                  onClick={() => onChange(color.value)}
-                >
-                  <span className="text-xs">{color.name}</span>
-                  {currentColor === color.value && <CheckIcon className="h-4 w-4" />}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </PopoverContent>
     </Popover>
