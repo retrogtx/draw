@@ -2,8 +2,9 @@ import { create } from 'zustand'
 import { createClient } from '@supabase/supabase-js'
 import { RealtimeChannel } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://kqeaxfhqnjyimjdjglsq.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxZWF4Zmhxbmp5aW1qZGpnbHNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1MTU5ODksImV4cCI6MjA1OTA5MTk4OX0.XWv4-E_3KXnghEC07QAtHQNkOjbmIF87XMlHCWTGwAA'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY!
+
 export const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Base channel prefix
