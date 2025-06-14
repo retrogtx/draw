@@ -55,7 +55,9 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
     clearPointsBuffer,
     setRoomId,
     setChannel,
-    getChannelName
+    getChannelName,
+    isClearing,
+    setIsClearing,
   } = useWhiteboardStore();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -846,6 +848,13 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
     }
   }, [textElements, shapes]);
 
+  useEffect(() => {
+    if (isClearing) {
+      clearCanvas();
+      setIsClearing(false);
+    }
+  }, [isClearing]);
+
   return (
     <div className="w-full h-full relative">
       <Toolbar 
@@ -886,13 +895,6 @@ export default function Whiteboard({ roomId }: WhiteboardProps) {
           </div>
         </div>
       )}
-      
-      <button
-        className="absolute right-4 top-4 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md flex items-center gap-2 shadow-lg"
-        onClick={clearCanvas}
-      >
-        <span>Clear</span>
-      </button>
       
       <canvas
         ref={canvasRef}

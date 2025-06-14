@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
 
 
 interface ColorPaletteProps {
@@ -9,40 +10,14 @@ interface ColorPaletteProps {
 }
 
 export default function ColorPalette({ currentColor, onChange }: ColorPaletteProps) {
-  // Basic colors palette
-  const basicColors = [
-    { name: "Red", value: "#ef4444" },
-    { name: "Orange", value: "#f97316" },
-    { name: "Amber", value: "#f59e0b" },
-    { name: "Yellow", value: "#eab308" },
-    { name: "Lime", value: "#84cc16" },
-    { name: "Green", value: "#22c55e" },
-    { name: "Emerald", value: "#10b981" },
-    { name: "Teal", value: "#14b8a6" },
-    { name: "Cyan", value: "#06b6d4" },
-    { name: "Sky", value: "#0ea5e9" },
-    { name: "Blue", value: "#3b82f6" },
-    { name: "Indigo", value: "#6366f1" },
-    { name: "Violet", value: "#8b5cf6" },
-    { name: "Purple", value: "#a855f7" },
-    { name: "Fuchsia", value: "#d946ef" },
-    { name: "Pink", value: "#ec4899" },
-    { name: "Rose", value: "#f43f5e" },
-  ];
-
-  // UI Colors (neutral tones)
-  const uiColors = [
-    { name: "Black", value: "#000000" },
-    { name: "Gray 900", value: "#171717" },
-    { name: "Gray 800", value: "#262626" },
-    { name: "Gray 700", value: "#404040" },
-    { name: "Gray 600", value: "#525252" },
-    { name: "Gray 500", value: "#737373" },
-    { name: "Gray 400", value: "#a3a3a3" },
-    { name: "Gray 300", value: "#d4d4d4" },
-    { name: "Gray 200", value: "#e5e5e5" },
-    { name: "Gray 100", value: "#f5f5f5" },
-    { name: "White", value: "#ffffff" },
+  const colors = [
+    // Basic colors
+    "#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#22c55e", "#10b981",
+    "#14b8a6", "#06b6d4", "#0ea5e9", "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7",
+    "#d946ef", "#ec4899", "#f43f5e",
+    // Neutral tones
+    "#000000", "#171717", "#262626", "#404040", "#525252", "#737373", "#a3a3a3",
+    "#d4d4d4", "#e5e5e5", "#f5f5f5", "#ffffff",
   ];
 
   return (
@@ -50,29 +25,27 @@ export default function ColorPalette({ currentColor, onChange }: ColorPalettePro
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="flex h-8 w-10 items-center justify-center p-0 border"
-          style={{ backgroundColor: "transparent" }}
+          className="flex h-8 w-8 items-center justify-center p-0"
         >
           <div
-            className="h-6 w-6 rounded-md shadow-md border border-gray-200"
+            className="h-6 w-6 rounded-full shadow-md border"
             style={{ backgroundColor: currentColor }}
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80" align="start">
+      <PopoverContent className="w-64" align="center">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <h4 className="font-medium text-sm">Color</h4>
-            <div className="grid grid-cols-8 gap-1">
-              {basicColors.map((color) => (
+            <h4 className="font-medium text-sm leading-none">Color</h4>
+            <div className="grid grid-cols-9 gap-1">
+              {colors.map((color) => (
                 <button
-                  key={color.value}
-                  className={`h-6 w-6 rounded-md shadow-sm border ${
-                    currentColor === color.value ? "ring-2 ring-primary" : ""
-                  }`}
-                  style={{ backgroundColor: color.value }}
-                  onClick={() => onChange(color.value)}
-                  title={color.name}
+                  key={color}
+                  className={`h-6 w-6 rounded-full shadow-sm border ${
+                    color === "#ffffff" ? "border-gray-200" : ""
+                  } ${currentColor.toLowerCase() === color.toLowerCase() ? "ring-2 ring-offset-2 ring-primary" : ""}`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => onChange(color)}
                 />
               ))}
             </div>
@@ -81,23 +54,23 @@ export default function ColorPalette({ currentColor, onChange }: ColorPalettePro
           <Separator />
           
           <div className="space-y-2">
-            <h4 className="font-medium text-sm">Neutral</h4>
-            <div className="grid grid-cols-11 gap-1">
-              {uiColors.map((color) => (
-                <button
-                  key={color.value}
-                  className={`h-6 w-6 rounded-md shadow-sm border ${
-                    color.value === "#ffffff" ? "border-gray-200" : ""
-                  } ${currentColor === color.value ? "ring-2 ring-primary" : ""}`}
-                  style={{ backgroundColor: color.value }}
-                  onClick={() => onChange(color.value)}
-                  title={color.name}
-                />
-              ))}
+            <h4 className="font-medium text-sm leading-none">Custom Color</h4>
+            <div className="flex items-center gap-2">
+              <Input
+                type="text"
+                value={currentColor}
+                onChange={(e) => onChange(e.target.value)}
+                className="h-8 text-sm"
+                placeholder="#RRGGBB"
+              />
+              <Input
+                type="color"
+                value={currentColor}
+                onChange={(e) => onChange(e.target.value)}
+                className="h-8 w-10 p-1"
+              />
             </div>
           </div>
-          
-          <Separator />
         </div>
       </PopoverContent>
     </Popover>

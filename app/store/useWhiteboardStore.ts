@@ -35,6 +35,7 @@ interface WhiteboardState {
   currentPath: Point[]
   roomId: string
   channel: RealtimeChannel | null
+  isClearing: boolean
   
   // Actions
   setUsername: (username: string) => void
@@ -50,6 +51,7 @@ interface WhiteboardState {
   clearCurrentPath: () => void
   setRoomId: (roomId: string) => void
   setChannel: (channel: RealtimeChannel) => void
+  setIsClearing: (isClearing: boolean) => void
   getChannelName: () => string
 }
 
@@ -77,6 +79,7 @@ const useWhiteboardStore = create<WhiteboardState>((set, get) => ({
   currentPath: [],
   roomId: 'default',
   channel: null,
+  isClearing: false,
   
   // Actions
   setUsername: (username) => set({ username }),
@@ -96,6 +99,7 @@ const useWhiteboardStore = create<WhiteboardState>((set, get) => ({
   clearCurrentPath: () => set({ currentPath: [] }),
   setRoomId: (roomId) => set({ roomId }),
   setChannel: (channel) => set({ channel }),
+  setIsClearing: (isClearing) => set({ isClearing }),
   getChannelName: () => `${CHANNEL_PREFIX}-${get().roomId}`
 }))
 

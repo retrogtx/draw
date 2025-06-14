@@ -27,10 +27,10 @@ const Toolbar = ({ selectedTool, setSelectedTool }: ToolbarProps) => {
   ] as const;
 
   return (
-    <div className="absolute left-4 top-4 z-10">
-      <div className="flex flex-col gap-2 bg-background/90 backdrop-blur-sm p-2 rounded-lg border shadow-md">
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+      <div className="flex items-center gap-2 bg-background/90 backdrop-blur-sm p-2 rounded-lg border shadow-2xl">
         {/* Drawing Tools */}
-        <div className="flex flex-col gap-1.5">
+        <div className="flex gap-1.5">
           {tools.map((tool) => (
             <Button
               key={tool.name}
@@ -46,7 +46,7 @@ const Toolbar = ({ selectedTool, setSelectedTool }: ToolbarProps) => {
           ))}
         </div>
 
-        <Separator className="my-1" />
+        <Separator orientation="vertical" className="h-8" />
 
         {/* Color Picker */}
         <div className="px-0.5">
